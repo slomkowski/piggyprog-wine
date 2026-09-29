@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# piggyprog - launch PiggyProg under Wine with the ftd2xx shim.
+#
+# The shim talks to the ECU Cheater through a Wine COM port, and Wine resolves COM
+# ports through symlinks in the prefix's dosdevices/.  Those symlinks are static,
+# so they go stale the moment the adapter re-enumerates as ttyUSB1 instead of
+# ttyUSB0.  This script finds the right tty by walking sysfs and repoints the
+# symlink before starting the app, so unplug/replug never needs manual fixing.
+#
+# It also forces a Polish locale.  PiggyProg is a Delphi app and its ECU definition
+# files (Config/MP/*.ini) store scaling factors as "12,8", "2,55", "255 1 15,04 0 7,35"
+# and so on - comma as the decimal separator.  Delphi's StrToFloat reads the separator
+# from the Windows regional settings, so under an en-US Wine prefix every one of those
+# raises "'12,8' is not a valid floating point value".  Wine derives the Windows locale
+# from LC_ALL at process start, so setting it here fixes the app without touching the
+# prefix or any other program in it.
+#
+# Usage:  piggyprog [--trace] [--log FILE] [--locale LOC] [-- <extra wine args>]
+
+set -euo pipefail
+
+PREFIX="${WINEPREFIX:-$HOME/.wine}"
+APPDIR="${PIGGYPROG_DIR:-$PREFIX/drive_c/Program Files (x86)/Ottomotive/PiggyProg v1.5}"
+COMNUM="${PIGGYPROG_COM:-2}"
+
+VID="${PIGGYPROG_VID:-0403}"
+PID="${PIGGYPROG_PID:-6001}"
+WANT_PRODUCT="${PIGGYPROG_PRODUCT:-Digital ECU Cheater}"
+
+# Any locale whose decimal separator is a comma will do; Polish matches the app.
+LOCALE="${PIGGYPROG_LOCALE:-pl_PL.UTF-8}"
+
+LOG=""
+TRACE=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --trace)  TRACE=1; shift ;;
+        --log)    LOG="$2"; shift 2 ;;
+        --locale) LOCALE="$2"; shift 2 ;;
+        --)       shift; break ;;
+        *)        break ;;
+    esac
+done
+
+# --- locale -----------------------------------------------------------------
+
+normalise() { tr 'A-Z' 'a-z' <<<"${1/UTF-8/utf8}"; }
+
+if [[ -n "$LOCALE" ]]; then
+    if locale -a 2>/dev/null | tr 'A-Z' 'a-z' | grep -qx "$(normalise "$LOCALE")"; then
+        export LC_ALL="$LOCALE" LANG="$LOCALE"
+    else
+        echo "warning: locale '$LOCALE' is not generated on this system." >&2
+        echo "         PiggyProg will fail on comma decimals such as \"12,8\"." >&2
+        echo "         Fix: uncomment '$LOCALE' in /etc/locale.gen and run locale-gen," >&2
+        echo "         or pass --locale with one that exists (locale -a)." >&2
+    fi
+fi
+
+# --- locate the adapter -----------------------------------------------------
+
+# Walk up from a tty's sysfs node to the USB device that carries idVendor.
+# The number of levels differs between kernels, so climb rather than assume.
+usb_device_of() {
+    local p
+    p=$(readlink -f "$1/device" 2>/dev/null) || return 1
+    while [[ -n "$p" && "$p" != "/" && "$p" != "/sys" ]]; do
+        [[ -r "$p/idVendor" ]] && { echo "$p"; return 0; }
+        p=$(dirname "$p")
+    done
+    return 1
+}
+
+find_tty() {
+    local fallback="" tty dev vid pid product serial
+    for tty in /sys/class/tty/ttyUSB*; do
+        [[ -e "$tty/device" ]] || continue
+        dev=$(usb_device_of "$tty") || continue
+        vid=$(<"$dev/idVendor"); pid=$(<"$dev/idProduct")
+        [[ "$vid" == "$VID" && "$pid" == "$PID" ]] || continue
+
+        product=$(cat "$dev/product" 2>/dev/null || true)
+        serial=$(cat "$dev/serial" 2>/dev/null || true)
+
+        if [[ "$product" == "$WANT_PRODUCT" ]]; then
+            echo "/dev/$(basename "$tty")"
+            echo "found \"$product\" (serial ${serial:-?}) on /dev/$(basename "$tty")" >&2
+            return 0
+        fi
+        [[ -n "$fallback" ]] || fallback="/dev/$(basename "$tty")"
+    done
+
+    if [[ -n "$fallback" ]]; then
+        echo "$fallback"
+        echo "no \"$WANT_PRODUCT\" found; falling back to $fallback ($VID:$PID)" >&2
+        return 0
+    fi
+    return 1
+}
+
+if ! TTY=$(find_tty); then
+    echo "error: no FTDI adapter ($VID:$PID) found." >&2
+    echo "       Plug in the ECU Cheater and check 'ls /dev/ttyUSB*'." >&2
+    exit 1
+fi
+
+if [[ ! -r "$TTY" || ! -w "$TTY" ]]; then
+    echo "error: no read/write access to $TTY." >&2
+    echo "       Add yourself to the 'uucp' group (Arch) or 'dialout' (Debian)." >&2
+    exit 1
+fi
+
+# --- point the Wine COM port at it ------------------------------------------
+
+LINK="$PREFIX/dosdevices/com$COMNUM"
+if [[ "$(readlink "$LINK" 2>/dev/null || true)" != "$TTY" ]]; then
+    ln -sfn "$TTY" "$LINK"
+    echo "mapped COM$COMNUM -> $TTY" >&2
+fi
+
+# --- run --------------------------------------------------------------------
+
+export FTD2XX_SHIM_PORT="COM$COMNUM"
+[[ -n "$LOG" ]]      && export FTD2XX_SHIM_LOG="$LOG"
+[[ "$TRACE" == 1 ]]  && export FTD2XX_SHIM_TRACE=1
+
+cd "$APPDIR"
+exec wine PiggyProg.exe "$@"

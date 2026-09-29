@@ -1,0 +1,61 @@
+# --- Build output (see Makefile `clean`) ---
+ftd2xx.dll
+shimtest.exe
+localeprobe.exe
+
+# Backup of FTDI's shipped DLL, made by `make install`
+*.orig-windows
+
+# Generic C/C++ build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.exe
+*.dll
+*.d
+*.gch
+*.pch
+
+# CMake / CLion out-of-source build trees
+cmake-build-*/
+build/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+Testing/
+compile_commands.json
+
+# JetBrains CLion / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Editors / tooling
+.vscode/
+.cache/
+.clangd/
+.ccls-cache/
+*.swp
+*.swo
+*~
+tags
+TAGS
+
+# Wine / runtime noise
+*.log
+wine-*.log
+.wine/
+dosdevices/
+
+# OS cruft
+.DS_Store
+Thumbs.db

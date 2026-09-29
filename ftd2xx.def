@@ -1,0 +1,60 @@
+; Export table for the ftd2xx shim.
+;
+; The ordinals MUST match FTDI's real ftd2xx.dll: PiggyProg.exe imports every FTDI
+; function *by ordinal only* (no names in its import table), so a mismatch here binds
+; the app to the wrong function.  The mapping below was taken from the bundled
+; ftd2xx.dll with:  winedump -j export ftd2xx.dll
+;
+; Left-hand side = exported (undecorated) name, right-hand side = internal stdcall
+; symbol, then the ordinal.
+
+LIBRARY FTD2XX.DLL
+EXPORTS
+    FT_Open                   = FT_Open@8                    @1
+    FT_Close                  = FT_Close@4                   @2
+    FT_Read                   = FT_Read@16                   @3
+    FT_Write                  = FT_Write@16                  @4
+    FT_ResetDevice            = FT_ResetDevice@4             @6
+    FT_SetBaudRate            = FT_SetBaudRate@8             @7
+    FT_SetDataCharacteristics = FT_SetDataCharacteristics@16 @8
+    FT_SetFlowControl         = FT_SetFlowControl@16         @9
+    FT_SetDtr                 = FT_SetDtr@4                  @10
+    FT_ClrDtr                 = FT_ClrDtr@4                  @11
+    FT_SetRts                 = FT_SetRts@4                  @12
+    FT_ClrRts                 = FT_ClrRts@4                  @13
+    FT_GetModemStatus         = FT_GetModemStatus@8          @14
+    FT_SetChars               = FT_SetChars@20               @15
+    FT_Purge                  = FT_Purge@8                   @16
+    FT_SetTimeouts            = FT_SetTimeouts@12            @17
+    FT_GetQueueStatus         = FT_GetQueueStatus@8          @18
+    FT_SetEventNotification   = FT_SetEventNotification@12   @19
+    FT_GetEventStatus         = FT_GetEventStatus@8          @20
+    FT_GetStatus              = FT_GetStatus@16              @21
+    FT_SetBreakOn             = FT_SetBreakOn@4              @22
+    FT_SetBreakOff            = FT_SetBreakOff@4             @23
+    FT_SetDivisor             = FT_SetDivisor@8              @26
+    FT_OpenEx                 = FT_OpenEx@12                 @27
+    FT_ListDevices            = FT_ListDevices@12            @28
+    FT_SetLatencyTimer        = FT_SetLatencyTimer@8         @29
+    FT_GetLatencyTimer        = FT_GetLatencyTimer@8         @30
+    FT_SetBitMode             = FT_SetBitMode@12             @31
+    FT_GetBitMode             = FT_GetBitMode@8              @32
+    FT_SetUSBParameters       = FT_SetUSBParameters@12       @33
+    FT_EraseEE                = FT_EraseEE@4                 @34
+    FT_ReadEE                 = FT_ReadEE@12                 @35
+    FT_WriteEE                = FT_WriteEE@12                @36
+    FT_GetDeviceInfo          = FT_GetDeviceInfo@24          @61
+    FT_StopInTask             = FT_StopInTask@4              @63
+    FT_RestartInTask          = FT_RestartInTask@4           @64
+    FT_SetResetPipeRetryCount = FT_SetResetPipeRetryCount@8  @65
+    FT_ResetPort              = FT_ResetPort@4               @66
+    FT_CyclePort              = FT_CyclePort@4               @69
+    FT_CreateDeviceInfoList   = FT_CreateDeviceInfoList@4    @70
+    FT_GetDeviceInfoList      = FT_GetDeviceInfoList@8       @71
+    FT_GetDeviceInfoDetail    = FT_GetDeviceInfoDetail@32    @72
+    FT_SetDeadmanTimeout      = FT_SetDeadmanTimeout@8       @73
+    FT_GetDriverVersion       = FT_GetDriverVersion@8        @75
+    FT_GetLibraryVersion      = FT_GetLibraryVersion@4       @76
+    FT_Rescan                 = FT_Rescan@0                  @78
+    FT_Reload                 = FT_Reload@8                  @79
+    FT_GetComPortNumber       = FT_GetComPortNumber@8        @80
