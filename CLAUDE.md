@@ -61,9 +61,11 @@ raises `'12,8' is not a valid floating point value`. Fix is per-process: `LC_ALL
 - `shimtest.c` — ordinal-resolving self-test.
 - `localeprobe.c` — prints Wine's regional settings.
 - `piggyprog` — launcher: finds the adapter by walking sysfs (vid:pid + USB product string),
-  repoints `$WINEPREFIX/dosdevices/com2` at the right `/dev/ttyUSB*`, exports
-  `FTD2XX_SHIM_*`, sets the locale, then `exec wine PiggyProg.exe`. It exists because Wine's
-  COM symlinks are static and go stale on re-enumeration.
+  pins COM2 to the right `/dev/ttyUSB*` in `HKLM\Software\Wine\Ports`, exports
+  `FTD2XX_SHIM_*`, sets the locale, then `exec wine PiggyProg.exe`. It exists because the
+  tty name changes on re-enumeration. Do **not** write `dosdevices/comN` symlinks directly:
+  Wine's mountmgr regenerates them all at prefix startup from that registry key, so a
+  hand-made link is silently replaced and the shim opens the wrong port.
 
 ## Behaviour contracts worth preserving
 

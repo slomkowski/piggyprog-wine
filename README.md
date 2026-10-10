@@ -63,14 +63,16 @@ nothing else in the app directory is touched and `PiggyProg.exe` itself is unmod
 
 `piggyprog` does two things before starting Wine:
 
-1. **Finds the adapter.** It walks sysfs (vid:pid + USB product string) and repoints
-   `~/.wine/dosdevices/com2` at whatever `/dev/ttyUSB*` the device landed on. Wine's COM
-   symlinks are static, so they go stale as soon as it re-enumerates as `ttyUSB1`.
+1. **Finds the adapter.** It walks sysfs (vid:pid + USB product string) and pins COM2 to
+   whatever `/dev/ttyUSB*` the device landed on, via `HKLM\Software\Wine\Ports`. Editing
+   `~/.wine/dosdevices/com2` directly does not work: Wine's mountmgr regenerates every
+   `comN` symlink at prefix startup from that registry key plus its own numbering, so a
+   hand-made link is silently replaced (typically with `/dev/ttyS0`).
 2. **Sets a Polish locale.** See below — the app does not work without it.
 
-Running `wine PiggyProg.exe` by hand also works, as long as `com2` points somewhere
-sensible *and* you set `LC_ALL`. The DLL next to the EXE takes precedence, so no
-`WINEDLLOVERRIDES` is needed:
+Running `wine PiggyProg.exe` by hand also works, as long as COM2 is pinned to the right tty
+(`wine reg add 'HKLM\Software\Wine\Ports' /v COM2 /d /dev/ttyUSB0 /f`) *and* you set
+`LC_ALL`. The DLL next to the EXE takes precedence, so no `WINEDLLOVERRIDES` is needed:
 
 ```sh
 LC_ALL=pl_PL.UTF-8 wine PiggyProg.exe

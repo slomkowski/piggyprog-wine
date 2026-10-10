@@ -2,11 +2,12 @@
 #
 # piggyprog - launch PiggyProg under Wine with the ftd2xx shim.
 #
-# The shim talks to the ECU Cheater through a Wine COM port, and Wine resolves COM
-# ports through symlinks in the prefix's dosdevices/.  Those symlinks are static,
-# so they go stale the moment the adapter re-enumerates as ttyUSB1 instead of
-# ttyUSB0.  This script finds the right tty by walking sysfs and repoints the
-# symlink before starting the app, so unplug/replug never needs manual fixing.
+# The shim talks to the ECU Cheater through a Wine COM port.  Wine resolves COM
+# ports through symlinks in the prefix's dosdevices/, but regenerates those at
+# startup from HKLM\Software\Wine\Ports plus its own numbering, and a pinned
+# entry goes stale the moment the adapter re-enumerates as ttyUSB1 instead of
+# ttyUSB0.  This script finds the right tty by walking sysfs and pins it in the
+# registry before starting the app, so unplug/replug never needs manual fixing.
 #
 # It also forces a Polish locale.  PiggyProg is a Delphi app and its ECU definition
 # files (Config/MP/*.ini) store scaling factors as "12,8", "2,55", "255 1 15,04 0 7,35"
@@ -114,9 +115,22 @@ fi
 
 # --- point the Wine COM port at it ------------------------------------------
 
-LINK="$PREFIX/dosdevices/com$COMNUM"
-if [[ "$(readlink "$LINK" 2>/dev/null || true)" != "$TTY" ]]; then
-    ln -sfn "$TTY" "$LINK"
+# Wine's mountmgr rebuilds every dosdevices/comN symlink when the prefix starts,
+# taking explicit assignments from HKLM\Software\Wine\Ports and numbering the
+# rest itself.  A symlink written here would be overwritten, so the mapping has to
+# go into the registry.  Other COMn entries pinned to the same tty are dropped as
+# stale.  (Wine still gives the tty an auto-numbered alias like COM34; harmless.)
+PORTS_KEY='HKLM\Software\Wine\Ports'
+while read -r name _ value; do
+    [[ "$name" == COM* && "$name" != "COM$COMNUM" && "$value" == "$TTY" ]] || continue
+    wine reg delete "$PORTS_KEY" /v "$name" /f >/dev/null 2>&1 || true
+    echo "unpinned $name (was $TTY)" >&2
+done < <(wine reg query "$PORTS_KEY" 2>/dev/null | tr -d '\r')
+
+current=$(wine reg query "$PORTS_KEY" /v "COM$COMNUM" 2>/dev/null | tr -d '\r' \
+          | awk -v n="COM$COMNUM" '$1 == n { print $3 }' || true)
+if [[ "$current" != "$TTY" ]]; then
+    wine reg add "$PORTS_KEY" /v "COM$COMNUM" /d "$TTY" /f >/dev/null 2>&1
     echo "mapped COM$COMNUM -> $TTY" >&2
 fi
 
