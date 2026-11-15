@@ -58,6 +58,29 @@ kończy się wartością 110, a po cofnięciu zmiany 109.
 - PiggyProg przy „Send CONFIG” wysyła ok. 68 ramek `S`. Część z nich ma wiele bajtów (tabele CLT, IAT, IacRefPos…);
 - przypisanie offsetów do kluczy `config.cfg` jest **do ustalenia**: trzeba porównać ramki `S` z wartościami w pliku.
 
+## Kodowanie parametrów ustalone zmianą w PiggyProg (15.11.2026, `trace-20261115-1159.log`)
+
+| offset | parametr | kodowanie |
+|---|---|---|
+| 0x00 | IgnitionType | 0–3 bez przeliczenia (0 = single signal / ignition module) |
+| 0x01 | SigPer720 | indeks z config.cfg + 1 (= liczba sygnałów; widziane 1, 4, 10) |
+| 0x02 | TriggInputType | indeks + 1 (Hall = 3) |
+| 0x03 | CylinderNo | indeks + 1 (= liczba cylindrów 1–8) |
+| 0x18 / 0x19 | LeanLimit / RichLimit | bez przeliczenia |
+| 0x31 | LcRpm | obr/min ÷ 100 |
+| 0x32 | LcIgn | −5,0° → 127 (0° → 0); jeden punkt, skala nieustalona |
+| 0x7b | ignMaxRetAdv | 0–50 bez przeliczenia (wcześniej błędnie przypisany do BoostControlByte) |
+| 0xa3 | BitFieldA | bit 0x04 = Smart fuel saving |
+| 0xa9 | SmartFuelSavingLimit | bez przeliczenia |
+| 0xab | IdleIndicator | 0–2 (2 = always idle) |
+| 0xad | RevLimitHysteresis | obr/min bez przeliczenia (200 → 200) |
+| 0xaf | IacAdditionalAfterstartOpen | bez przeliczenia |
+| 0x0b | tpsType | 0/1 |
+
+Nadal nieustalone: InjectionDiv (0x04), FuelAlgorithm, BoostControlByte (może 0x77), bajt 0xa2, LcIgn;
+nieprzetestowane przy wartościach ≠ 0: TpsAccelTime, TpsAccelAmount, IacCrankingPosition, IacWhenNotInIdle,
+BoostTargetTab, parametry regulatora boost.
+
 ## Do zrobienia przed zapisem z własnego programu
 
 1. Odczytać pełne strony bezpośrednio z portu. Zapis z nakładki ucina linie przy 256 B, więc część odpowiedzi `M` jest niepełna.

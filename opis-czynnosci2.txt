@@ -1,0 +1,13 @@
+12:02 wybierałem liczbę cylindrów. było 4 na początku. potem jechałem od 1 do konca i na koncu znowu 4
+12:03 signal per 720: najpierw 4, potem 1, potem 10, na koncu znowu 4.
+12:04 trigger input type jest hall: zmieniam po kolei.
+12:05 wybierałem ignition type. ustawione jest na single signal/ignition module
+12:06 zmienialem ignition max retard advance. od 0 do 50
+12:08 launch control. ustawilem 3000, lc ignition angle ustawilem na -5.0. nie mozna wybrac 5. maaximum to 0.
+12:10 maximum rpm hysteresis na 200
+12:16 idle control. przeszedłem prezz opcje. zostawiłem na always idle
+12:17 additional afterstarrt open
+12:21 reach limit i lean limit
+12:22 activate sart fuel saving
+12:22:54 smart fuel saving limit na 10
+
