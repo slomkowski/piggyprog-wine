@@ -77,9 +77,24 @@ kończy się wartością 110, a po cofnięciu zmiany 109.
 | 0xaf | IacAdditionalAfterstartOpen | bez przeliczenia |
 | 0x0b | tpsType | 0/1 |
 
-Nadal nieustalone: InjectionDiv (0x04), FuelAlgorithm, BoostControlByte (może 0x77), bajt 0xa2, LcIgn;
-nieprzetestowane przy wartościach ≠ 0: TpsAccelTime, TpsAccelAmount, IacCrankingPosition, IacWhenNotInIdle,
-BoostTargetTab, parametry regulatora boost.
+Trzecia sesja (`trace-20261115-1229.log`, `opis-czynnosci3.txt`):
+
+| offset | parametr | kodowanie |
+|---|---|---|
+| 0x04 | InjectionDiv | indeks listy: 0 = ×2, 1 = /1, 2 = /2, … |
+| 0x08 | InjectionType | 0 = two groups, 1 = one group |
+| 0x1c | TpsAccelAmount | surowo; w GUI ms = wartość / 31,25 (maks. 8,16) |
+| 0x24 | TpsAccelTime | ms ÷ 50 (450 → 9, 4400 → 88); jednostka w config.cfg nieznana |
+| 0x32 | LcIgn | surowo; w GUI kąt = wartość / 25,5 − 10° (0 → −10,0°, 255 → 0,0°, krok 0,2°) |
+| 0x77 | FuelAlgorithm | 0 = Speed density, 1 = Alpha N |
+| 0x7c | BoostTargetTab | 16 słów little-endian (pierwsza komórka 5 → `05 00`) |
+| 0x9c | BoostControlByte | bit 0x01 = closed loop, 0x02 = valve reverse |
+| 0x9d–0xa2 | BoostMaxFeedbackInc/Dec, Kp, Ki, Kd, IntegralLimit | o bajt dalej niż wcześniej zakładano |
+| 0xa3 | BitFieldA | 0x04 = Smart fuel saving, 0x10 = No injection divider on idle |
+| 0xae | IacWhenNotInIdle | bez przeliczenia |
+
+Cały blok (176 B) jest przypisany. Nieustalona pozostaje tylko jednostka TpsAccelTime w config.cfg;
+nieprzetestowane przy wartościach ≠ 0: IacCrankingPosition, parametry regulatora boost.
 
 ## Do zrobienia przed zapisem z własnego programu
 

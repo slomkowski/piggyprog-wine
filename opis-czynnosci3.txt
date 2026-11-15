@@ -1,0 +1,21 @@
+12:32:30 przehcodzilem po injection divider. zaczałem od *2, potem /1, /2 i do max. pomijalem niektore. wrocilem do /2
+12:33:40 zaznaczylem no injection divider on idle a nastepnie odznaczylem
+12:34:10 przelaczylem na alpna n a potem powrocilem do speed density
+12:34:50 przelaczylem injection type na two groups i powrocilem do one group
+12:36:08 lc ignition angle jest -2.6. kąty idą co 0.2 stopnia
+12:36:35 lc ignition angle jest -0.8
+12:37:02 lc ignition angle jest -10.0
+12:37:23 lc ignition angle jest 0.0
+12:37:55 enrichment sustain time idzie co 50
+12:38:30 teraz jet 450
+12:38:46 teraz jest 2900
+12:39:00 teraz jest 4400
+12:39:14 teraz jest 0
+12:40:10 acceleration amount na 20 pierwsza komorka. wydaej mi sie, ze program limituje to 8.16, swieci na czerwono
+12:40:40 ustawilem na 0
+12:42:02 iac not in idle 30
+12:42:16 iacc not in idle 0
+12:43:10 wybralem closed loop a potem powrocilem do open loop
+12:43:50 właczylem valve reverse a potem wylaczylem
+12:44:40 komórka kpa na 5 a potem na 0. dla rpm 700 w boost config
+
