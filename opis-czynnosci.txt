@@ -1,0 +1,25 @@
+10:52:57 połączony, na razie nic nie robilem
+10:53:19 otwarty projekt w124
+10:54:31 usawilem 110 w komórce górnej prawej. maps i permament sweici sie na czerwono
+10:55:29 zmienilem to samo w mapie proposals. tez sie swieci maps i permament na czerwono
+10:56:14 kliknalem dwa razy send ve to ecu
+10:56:36 save maps
+10:56:53 permanent
+10:57:25 vss constant zmenilem na 78
+10:57:48 send to ecu
+10:58:15 save przy config
+10:58:30 permanent
+
+tu było logowwanie, zeby było logowanie, trzeba było włączyc silnik
+
+wyłaczyłem silnik, połączenie z DEC padło, musiałem zrestartować program piggyprog
+
+11:02:40 send all to ecu 
+11:03:40 przestawienie na 77 w abs, maps na 109. maps i config swieca sie na czerwono.
+11:04:50 klikniecie send all to ecu wysyła i maps jest zielone, ale config jest nadal czerwone
+11:05:30 w panelu config kliknąlem save to ecu
+11:06:03 kliknalem save przy config, config jest zielony
+11:06:35 kliknalem permament
+11:07:02 wyszedlem z piggyprog
+11:07:35 wylaczylem i wlaczylem zaplon
+
